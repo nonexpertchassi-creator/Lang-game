@@ -1,0 +1,67 @@
+[
+  {
+    "id": "ja-hiragana",
+    "name": "히라가나",
+    "desc": "일본어의 기본 문자. 이것 없이는 아무것도 읽을 수 없다.",
+    "cost": 60,
+    "requires": [],
+    "unlocks": { "worldTags": ["hiragana"] }
+  },
+  {
+    "id": "ja-katakana",
+    "name": "가타카나",
+    "desc": "외래어를 적는 문자. 거리 간판의 절반은 가타카나다.",
+    "cost": 80,
+    "requires": ["ja-hiragana"],
+    "unlocks": { "worldTags": ["katakana"] }
+  },
+  {
+    "id": "ja-greetings",
+    "name": "기초 인사",
+    "desc": "인사만 잘해도 여행이 훨씬 편해진다.",
+    "cost": 60,
+    "requires": [],
+    "unlocks": { "worldTags": ["greetings"] }
+  },
+  {
+    "id": "ja-numbers",
+    "name": "숫자와 돈",
+    "desc": "가격표를 읽고 돈을 셀 수 있다.",
+    "cost": 80,
+    "requires": ["ja-hiragana"],
+    "unlocks": { "worldTags": ["numbers"] }
+  },
+  {
+    "id": "ja-food-words",
+    "name": "음식 단어",
+    "desc": "메뉴판이 보이기 시작한다.",
+    "cost": 100,
+    "requires": ["ja-hiragana"],
+    "unlocks": { "worldTags": ["food"] }
+  },
+  {
+    "id": "ja-restaurant",
+    "name": "음식 주문",
+    "desc": "식당에서 원하는 것을 주문할 수 있다.",
+    "cost": 120,
+    "requires": ["ja-food-words", "ja-greetings"],
+    "unlocks": { "worldTags": ["restaurant"] }
+  },
+  {
+    "id": "ja-directions",
+    "name": "길찾기",
+    "desc": "길을 묻고, 대답을 알아들을 수 있다.",
+    "cost": 120,
+    "requires": ["ja-greetings", "ja-numbers"],
+    "unlocks": { "worldTags": ["directions"] }
+  },
+  {
+    "id": "ja-kanji-basic",
+    "name": "기초 한자",
+    "desc": "역, 출구, 입구… 도시가 읽히기 시작한다.",
+    "cost": 150,
+    "requires": ["ja-hiragana", "ja-katakana"],
+    "unlocks": { "worldTags": ["kanji"] },
+    "crossLanguageBonus": { "zh": 0.3 }
+  }
+]

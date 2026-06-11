@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>LinguaTrip — 도트 세계 언어 여행</title>
+    <meta name="description" content="도트 세계를 여행하며 연구 트리로 외국어를 배우는 무료 웹 게임. 첫 여행지는 일본!" />
+  </head>
+  <body>
+    <div id="app">
+      <div id="game-container"></div>
+      <div id="hud"></div>
+      <div id="hint-bar">이동: 방향키/WASD · 조사: 스페이스/E</div>
+      <div id="dialog" class="hidden"></div>
+      <div id="panel-root"></div>
+      <div id="dpad">
+        <button id="dpad-up" class="dpad-btn">▲</button>
+        <button id="dpad-left" class="dpad-btn">◀</button>
+        <button id="dpad-right" class="dpad-btn">▶</button>
+        <button id="dpad-down" class="dpad-btn">▼</button>
+      </div>
+      <button id="action-btn">조사</button>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

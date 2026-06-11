@@ -1,0 +1,166 @@
+:root {
+  --ink: #2b2233;
+  --paper: #f4ead8;
+  --accent: #e8593f;
+  --green: #3f9e54;
+  --panel: #fffaf0;
+  font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body { height: 100%; background: #1a1422; overflow: hidden; }
+
+#app { position: relative; width: 100%; height: 100%; }
+
+#game-container {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+#game-container canvas { image-rendering: pixelated; }
+
+/* ---------- HUD ---------- */
+#hud {
+  position: absolute; top: 10px; left: 10px; right: 10px;
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  pointer-events: none;
+}
+#hud > * { pointer-events: auto; }
+
+.hud-research {
+  background: var(--panel); border: 3px solid var(--ink); border-radius: 6px;
+  padding: 6px 12px; min-width: 220px; box-shadow: 3px 3px 0 rgba(0,0,0,.35);
+}
+.hud-research .label { font-size: 11px; color: #8a7f72; }
+.hud-research .name { font-weight: 700; font-size: 14px; color: var(--ink); }
+.hud-research .bar {
+  height: 8px; background: #ddd2bd; border-radius: 4px; margin-top: 4px; overflow: hidden;
+}
+.hud-research .bar > div { height: 100%; background: var(--accent); width: 0%; transition: width .25s; }
+.hud-research .rp-text { font-size: 11px; color: #8a7f72; margin-top: 2px; }
+
+.hud-btn {
+  background: var(--accent); color: #fff; border: 3px solid var(--ink); border-radius: 6px;
+  font-weight: 700; font-size: 14px; padding: 10px 14px; cursor: pointer;
+  box-shadow: 3px 3px 0 rgba(0,0,0,.35);
+}
+.hud-btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 rgba(0,0,0,.35); }
+.hud-btn.secondary { background: var(--green); }
+.hud-btn:disabled { background: #9a918a; cursor: default; }
+.hud-btn.pulse { animation: pulse 1.2s infinite; }
+@keyframes pulse { 50% { transform: scale(1.06); } }
+
+#hint-bar {
+  position: absolute; bottom: 10px; left: 10px;
+  background: rgba(20, 14, 28, .75); color: #cfc4b6;
+  font-size: 12px; padding: 6px 10px; border-radius: 6px;
+}
+
+/* ---------- 대화창 ---------- */
+#dialog {
+  position: absolute; left: 50%; bottom: 56px; transform: translateX(-50%);
+  width: min(560px, calc(100% - 32px));
+  background: var(--panel); border: 3px solid var(--ink); border-radius: 8px;
+  padding: 14px 16px; box-shadow: 4px 4px 0 rgba(0,0,0,.4);
+  cursor: pointer;
+}
+#dialog .speaker { font-size: 12px; color: var(--accent); font-weight: 700; }
+#dialog .text { font-size: 20px; color: var(--ink); margin: 4px 0; }
+#dialog .sub { font-size: 13px; color: #6f6457; }
+#dialog .locked-hint { font-size: 13px; color: var(--accent); margin-top: 6px; font-weight: 600; }
+#dialog .close-hint { font-size: 11px; color: #a89b8b; text-align: right; margin-top: 4px; }
+
+/* ---------- 패널 (연구 트리 / 퀴즈) ---------- */
+.panel-overlay {
+  position: absolute; inset: 0; background: rgba(15, 10, 22, .72);
+  display: flex; align-items: center; justify-content: center; z-index: 10;
+}
+.panel {
+  background: var(--panel); border: 4px solid var(--ink); border-radius: 10px;
+  width: min(640px, calc(100% - 24px)); max-height: calc(100% - 40px);
+  display: flex; flex-direction: column;
+  box-shadow: 6px 6px 0 rgba(0,0,0,.45);
+}
+.panel-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px; border-bottom: 3px solid var(--ink);
+}
+.panel-head h2 { font-size: 17px; color: var(--ink); }
+.panel-close {
+  background: none; border: none; font-size: 22px; cursor: pointer; color: var(--ink);
+  line-height: 1; padding: 2px 6px;
+}
+.panel-body { padding: 14px 16px; overflow-y: auto; }
+
+/* 연구 카드 */
+.research-card {
+  border: 3px solid var(--ink); border-radius: 8px; padding: 10px 12px; margin-bottom: 10px;
+  background: #fff;
+}
+.research-card .row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.research-card .name { font-weight: 700; font-size: 15px; color: var(--ink); }
+.research-card .cost { font-size: 12px; color: #8a7f72; white-space: nowrap; }
+.research-card .desc { font-size: 13px; color: #6f6457; margin-top: 4px; }
+.research-card .req { font-size: 12px; color: var(--accent); margin-top: 4px; }
+.research-card .mini-bar { height: 6px; background: #ddd2bd; border-radius: 3px; margin-top: 6px; overflow: hidden; }
+.research-card .mini-bar > div { height: 100%; background: var(--accent); }
+.research-card.done { background: #e7f3e9; border-color: var(--green); }
+.research-card.done .name::after { content: ' ✓'; color: var(--green); }
+.research-card.locked { opacity: .55; }
+.research-card.active-card { border-color: var(--accent); background: #fff3ee; }
+.research-card button.select-btn {
+  margin-top: 8px; width: 100%; background: var(--accent); color: #fff;
+  border: 2px solid var(--ink); border-radius: 6px; font-weight: 700;
+  padding: 8px; cursor: pointer; font-size: 14px;
+}
+
+/* 퀴즈 */
+.quiz-progress { font-size: 12px; color: #8a7f72; margin-bottom: 8px; }
+.quiz-question {
+  font-size: 22px; font-weight: 700; color: var(--ink); text-align: center;
+  padding: 18px 8px; background: #fff; border: 3px solid var(--ink); border-radius: 8px;
+  margin-bottom: 14px;
+}
+.quiz-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.quiz-choice {
+  font-size: 20px; padding: 14px 8px; background: #fff; color: var(--ink);
+  border: 3px solid var(--ink); border-radius: 8px; cursor: pointer; font-weight: 600;
+}
+.quiz-choice.correct { background: #cdebd3; border-color: var(--green); }
+.quiz-choice.wrong { background: #f6cfc6; border-color: var(--accent); }
+.quiz-feedback { text-align: center; font-size: 14px; margin-top: 12px; min-height: 22px; color: var(--ink); }
+.quiz-next {
+  display: block; margin: 12px auto 0; background: var(--green); color: #fff;
+  border: 3px solid var(--ink); border-radius: 6px; font-weight: 700;
+  padding: 10px 28px; cursor: pointer; font-size: 15px;
+}
+.quiz-complete { text-align: center; padding: 24px 8px; }
+.quiz-complete .big { font-size: 26px; font-weight: 800; color: var(--green); margin-bottom: 8px; }
+.quiz-complete .sub { font-size: 14px; color: #6f6457; }
+
+/* ---------- 모바일 터치 컨트롤 ---------- */
+#dpad, #action-btn { display: none; }
+
+@media (pointer: coarse) {
+  #dpad {
+    display: grid; position: absolute; left: 14px; bottom: 48px; z-index: 5;
+    grid-template-areas: '. up .' 'left . right' '. down .';
+    gap: 6px;
+  }
+  #dpad-up { grid-area: up; } #dpad-down { grid-area: down; }
+  #dpad-left { grid-area: left; } #dpad-right { grid-area: right; }
+  .dpad-btn {
+    width: 52px; height: 52px; font-size: 18px;
+    background: rgba(244, 234, 216, .85); border: 3px solid var(--ink); border-radius: 10px;
+    color: var(--ink); touch-action: none; user-select: none;
+  }
+  #action-btn {
+    display: block; position: absolute; right: 18px; bottom: 64px; z-index: 5;
+    width: 72px; height: 72px; border-radius: 50%;
+    background: rgba(232, 89, 63, .9); color: #fff; font-weight: 800; font-size: 15px;
+    border: 3px solid var(--ink); touch-action: none; user-select: none;
+  }
+  #hint-bar { display: none; }
+}
+
+.hidden { display: none !important; }

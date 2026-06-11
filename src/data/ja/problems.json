@@ -1,0 +1,79 @@
+{
+  "ja-hiragana": [
+    { "target": "あ", "reading": "아 (a)", "meaning": "'아' 소리가 나는 글자", "rp": 10 },
+    { "target": "い", "reading": "이 (i)", "meaning": "'이' 소리가 나는 글자", "rp": 10 },
+    { "target": "う", "reading": "우 (u)", "meaning": "'우' 소리가 나는 글자", "rp": 10 },
+    { "target": "え", "reading": "에 (e)", "meaning": "'에' 소리가 나는 글자", "rp": 10 },
+    { "target": "お", "reading": "오 (o)", "meaning": "'오' 소리가 나는 글자", "rp": 10 },
+    { "target": "か", "reading": "카 (ka)", "meaning": "'카' 소리가 나는 글자", "rp": 10 },
+    { "target": "さ", "reading": "사 (sa)", "meaning": "'사' 소리가 나는 글자", "rp": 10 },
+    { "target": "た", "reading": "타 (ta)", "meaning": "'타' 소리가 나는 글자", "rp": 10 }
+  ],
+  "ja-katakana": [
+    { "target": "ア", "reading": "아 (a)", "meaning": "'아' 소리가 나는 가타카나", "rp": 10 },
+    { "target": "カ", "reading": "카 (ka)", "meaning": "'카' 소리가 나는 가타카나", "rp": 10 },
+    { "target": "サ", "reading": "사 (sa)", "meaning": "'사' 소리가 나는 가타카나", "rp": 10 },
+    { "target": "タ", "reading": "타 (ta)", "meaning": "'타' 소리가 나는 가타카나", "rp": 10 },
+    { "target": "コンビニ", "reading": "콘비니 (konbini)", "meaning": "편의점", "rp": 15 },
+    { "target": "カメラ", "reading": "카메라 (kamera)", "meaning": "카메라", "rp": 15 },
+    { "target": "ホテル", "reading": "호테루 (hoteru)", "meaning": "호텔", "rp": 15 },
+    { "target": "バス", "reading": "바스 (basu)", "meaning": "버스", "rp": 15 }
+  ],
+  "ja-greetings": [
+    { "target": "こんにちは", "reading": "곤니치와 (konnichiwa)", "meaning": "안녕하세요 (낮 인사)", "rp": 10 },
+    { "target": "おはよう", "reading": "오하요- (ohayou)", "meaning": "안녕 (아침 인사)", "rp": 10 },
+    { "target": "ありがとう", "reading": "아리가토- (arigatou)", "meaning": "고마워요", "rp": 10 },
+    { "target": "すみません", "reading": "스미마셍 (sumimasen)", "meaning": "실례합니다 / 죄송합니다", "rp": 10 },
+    { "target": "さようなら", "reading": "사요-나라 (sayounara)", "meaning": "안녕히 가세요", "rp": 10 },
+    { "target": "はい", "reading": "하이 (hai)", "meaning": "네", "rp": 10 },
+    { "target": "いいえ", "reading": "이-에 (iie)", "meaning": "아니요", "rp": 10 }
+  ],
+  "ja-numbers": [
+    { "target": "いち", "reading": "이치 (ichi)", "meaning": "1 (하나)", "rp": 10 },
+    { "target": "に", "reading": "니 (ni)", "meaning": "2 (둘)", "rp": 10 },
+    { "target": "さん", "reading": "산 (san)", "meaning": "3 (셋)", "rp": 10 },
+    { "target": "よん", "reading": "욘 (yon)", "meaning": "4 (넷)", "rp": 10 },
+    { "target": "ご", "reading": "고 (go)", "meaning": "5 (다섯)", "rp": 10 },
+    { "target": "ひゃく", "reading": "햐쿠 (hyaku)", "meaning": "100 (백)", "rp": 10 },
+    { "target": "円", "reading": "엔 (en)", "meaning": "엔 (일본 화폐 단위)", "rp": 10 },
+    { "target": "いくらですか", "reading": "이쿠라데스카 (ikura desu ka)", "meaning": "얼마예요?", "rp": 15 }
+  ],
+  "ja-food-words": [
+    { "target": "すし", "reading": "스시 (sushi)", "meaning": "초밥", "rp": 10 },
+    { "target": "らーめん", "reading": "라-멘 (raamen)", "meaning": "라멘", "rp": 10 },
+    { "target": "みず", "reading": "미즈 (mizu)", "meaning": "물", "rp": 10 },
+    { "target": "おちゃ", "reading": "오챠 (ocha)", "meaning": "차 (녹차)", "rp": 10 },
+    { "target": "ごはん", "reading": "고항 (gohan)", "meaning": "밥", "rp": 10 },
+    { "target": "さかな", "reading": "사카나 (sakana)", "meaning": "생선", "rp": 10 },
+    { "target": "にく", "reading": "니쿠 (niku)", "meaning": "고기", "rp": 10 },
+    { "target": "たまご", "reading": "타마고 (tamago)", "meaning": "달걀", "rp": 10 }
+  ],
+  "ja-restaurant": [
+    { "target": "これをください", "reading": "코레오 쿠다사이 (kore o kudasai)", "meaning": "이거 주세요", "rp": 15 },
+    { "target": "メニュー", "reading": "메뉴- (menyuu)", "meaning": "메뉴", "rp": 10 },
+    { "target": "おいしい", "reading": "오이시- (oishii)", "meaning": "맛있어요", "rp": 10 },
+    { "target": "おすすめ", "reading": "오스스메 (osusume)", "meaning": "추천 (메뉴)", "rp": 10 },
+    { "target": "おかいけい", "reading": "오카이케- (okaikei)", "meaning": "계산서 / 계산할게요", "rp": 15 },
+    { "target": "いただきます", "reading": "이타다키마스 (itadakimasu)", "meaning": "잘 먹겠습니다", "rp": 15 }
+  ],
+  "ja-directions": [
+    { "target": "どこですか", "reading": "도코데스카 (doko desu ka)", "meaning": "어디예요?", "rp": 15 },
+    { "target": "みぎ", "reading": "미기 (migi)", "meaning": "오른쪽", "rp": 10 },
+    { "target": "ひだり", "reading": "히다리 (hidari)", "meaning": "왼쪽", "rp": 10 },
+    { "target": "まっすぐ", "reading": "맛스구 (massugu)", "meaning": "직진 (똑바로)", "rp": 10 },
+    { "target": "えき", "reading": "에키 (eki)", "meaning": "역", "rp": 10 },
+    { "target": "トイレ", "reading": "토이레 (toire)", "meaning": "화장실", "rp": 10 },
+    { "target": "ちかい", "reading": "치카이 (chikai)", "meaning": "가까워요", "rp": 10 },
+    { "target": "とおい", "reading": "토-이 (tooi)", "meaning": "멀어요", "rp": 10 }
+  ],
+  "ja-kanji-basic": [
+    { "target": "駅", "reading": "에키 (eki)", "meaning": "역 (기차역)", "rp": 15 },
+    { "target": "出口", "reading": "데구치 (deguchi)", "meaning": "출구", "rp": 15 },
+    { "target": "入口", "reading": "이리구치 (iriguchi)", "meaning": "입구", "rp": 15 },
+    { "target": "店", "reading": "미세 (mise)", "meaning": "가게", "rp": 15 },
+    { "target": "山", "reading": "야마 (yama)", "meaning": "산", "rp": 15 },
+    { "target": "川", "reading": "카와 (kawa)", "meaning": "강", "rp": 15 },
+    { "target": "人", "reading": "히토 (hito)", "meaning": "사람", "rp": 15 },
+    { "target": "水", "reading": "미즈 (mizu)", "meaning": "물", "rp": 15 }
+  ]
+}
