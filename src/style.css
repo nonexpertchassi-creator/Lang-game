@@ -68,6 +68,15 @@ html, body { height: 100%; background: #1a1422; overflow: hidden; }
 #dialog .text { font-size: 20px; color: var(--ink); margin: 4px 0; }
 #dialog .sub { font-size: 13px; color: #6f6457; }
 #dialog .locked-hint { font-size: 13px; color: var(--accent); margin-top: 6px; font-weight: 600; }
+#dialog .cognate { font-size: 13px; color: var(--green); margin-top: 6px; font-weight: 700; }
+.dialog-speak {
+  background: none; border: 2px solid var(--ink); border-radius: 6px;
+  font-size: 14px; padding: 2px 8px; cursor: pointer; vertical-align: middle;
+}
+.quiz-speak {
+  background: var(--accent); color: #fff; border: 2px solid var(--ink); border-radius: 6px;
+  font-size: 14px; font-weight: 700; padding: 4px 12px; cursor: pointer; vertical-align: middle;
+}
 #dialog .close-hint { font-size: 11px; color: #a89b8b; text-align: right; margin-top: 4px; }
 
 /* ---------- 패널 (연구 트리 / 퀴즈) ---------- */

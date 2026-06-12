@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import type { ResearchSystem } from '../systems/ResearchSystem';
+import { speakJa, ttsAvailable } from '../systems/speech';
 import { virtualPad } from '../ui/TouchControls';
 
 const TILE = 16;
@@ -31,23 +32,45 @@ const MAP = [
 interface WorldText {
   x: number;
   y: number;
-  /** 이 태그의 연구를 완료해야 읽을 수 있다 */
-  tag: string;
-  text: string;
-  reading: string;
-  meaning: string;
-  speaker: string;
   kind: 'sign' | 'npc';
+  speaker: string;
+  /** 일본어 원문 */
+  text: string;
+  /** 한글 음차 — 소리는 처음부터 들린다 */
+  phonetic: string;
+  meaning: string;
+  /** 뜻을 알게 되는 연구 태그 (NPC 대사용 — 간판은 scriptTag로 전체 해금) */
+  meaningTag?: string;
+  /** 글자를 읽게 되는 연구 태그 (간판은 이것으로 전체 해금) */
+  scriptTag?: string;
+  /** 간판 픽토그램 — 글자를 몰라도 그림으로 추측 가능 */
+  pictogram?: string;
+  /** 픽토그램으로 추측한 내용 */
+  guess?: string;
+  /** 한국어 유사 단어 노트 — 연구 없이도 알아듣는 첫 경험 */
+  cognateNote?: string;
+  /** NPC 스프라이트 키 */
+  sprite?: string;
 }
 
-// 마을에 배치된 일본어 텍스트들 — 연구 완료 시 ???가 진짜 글자로 바뀐다
+// 마을에 배치된 일본어 — 간판은 "읽기", 대사는 "듣기→뜻→읽기" 단계로 해금된다
 const WORLD_TEXTS: WorldText[] = [
-  { x: 3,  y: 4,  tag: 'hiragana', text: 'すし',      reading: '스시 (sushi)',          meaning: '초밥집 간판이다.',          speaker: '간판', kind: 'sign' },
-  { x: 9,  y: 4,  tag: 'food',     text: 'らーめん',  reading: '라-멘 (raamen)',        meaning: '라멘 가게 간판이다.',        speaker: '간판', kind: 'sign' },
-  { x: 15, y: 4,  tag: 'katakana', text: 'コンビニ',  reading: '콘비니 (konbini)',      meaning: '편의점 간판이다.',          speaker: '간판', kind: 'sign' },
-  { x: 20, y: 4,  tag: 'kanji',    text: '駅',        reading: '에키 (eki)',            meaning: '역 표지판이다.',            speaker: '표지판', kind: 'sign' },
-  { x: 7,  y: 11, tag: 'numbers',  text: '500円',     reading: '고햐쿠엔 (gohyaku-en)', meaning: '음료수 자판기. 500엔이다.', speaker: '자판기', kind: 'sign' },
-  { x: 12, y: 7,  tag: 'greetings', text: 'こんにちは！', reading: '곤니치와! (konnichiwa)', meaning: '"안녕하세요!" 라고 인사했다.', speaker: '마을 사람', kind: 'npc' },
+  { x: 3,  y: 4,  kind: 'sign', speaker: '간판',   text: 'すし',     phonetic: '스시',     meaning: '초밥',            scriptTag: 'hiragana', pictogram: '🍣', guess: '초밥집인 것 같다' },
+  { x: 9,  y: 4,  kind: 'sign', speaker: '간판',   text: 'らーめん', phonetic: '라-멘',    meaning: '라멘 가게',        scriptTag: 'food',     pictogram: '🍜', guess: '라멘 가게인 것 같다' },
+  { x: 15, y: 4,  kind: 'sign', speaker: '간판',   text: 'コンビニ', phonetic: '콘비니',   meaning: '편의점',          scriptTag: 'katakana', pictogram: '🏪', guess: '편의점인 것 같다' },
+  { x: 20, y: 4,  kind: 'sign', speaker: '표지판', text: '駅',       phonetic: '에키',     meaning: '역',              scriptTag: 'kanji',    pictogram: '🚉', guess: '기차역 표지판인 것 같다' },
+  { x: 7,  y: 11, kind: 'sign', speaker: '자판기', text: '500円',    phonetic: '고햐쿠엔', meaning: '500엔 (음료수 가격)', scriptTag: 'numbers',  pictogram: '🥤', guess: '음료수 자판기다. 가격이 적혀 있다' },
+  {
+    x: 12, y: 7, kind: 'npc', speaker: '마을 사람', sprite: 'npc',
+    text: 'こんにちは！', phonetic: '곤니치와!',
+    meaning: '안녕하세요! (낮 인사)', meaningTag: 'greetings', scriptTag: 'hiragana',
+  },
+  {
+    x: 10, y: 10, kind: 'npc', speaker: '바쁜 마을 사람', sprite: 'npc2',
+    text: 'あした、やくそくが あります。', phonetic: '아시타, 야쿠소쿠가 아리마스.',
+    meaning: '내일 약속이 있어요.', meaningTag: 'greetings', scriptTag: 'hiragana',
+    cognateNote: "💡 '야쿠소쿠'…? 한국어 '약속'이랑 비슷하게 들린다!",
+  },
 ];
 
 export class WorldScene extends Phaser.Scene {
@@ -58,7 +81,7 @@ export class WorldScene extends Phaser.Scene {
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
   private wasd!: Record<'up' | 'down' | 'left' | 'right', Phaser.Input.Keyboard.Key>;
   private actionKeys!: Phaser.Input.Keyboard.Key[];
-  private labels = new Map<WorldText, Phaser.GameObjects.Text>();
+  private signLabels = new Map<WorldText, Phaser.GameObjects.Text>();
   private blockedCoords = new Set<string>();
   private dialogEl!: HTMLElement;
   private dialogOpen = false;
@@ -98,7 +121,7 @@ export class WorldScene extends Phaser.Scene {
     this.dialogEl.addEventListener('click', () => this.closeDialog());
 
     // 연구 완료 → 간판이 읽히게 됨 (핵심 쾌감 포인트)
-    this.rs.on('completed', () => this.refreshWorldTexts(true));
+    this.rs.on('completed', () => this.refreshSignLabels(true));
   }
 
   update(): void {
@@ -154,34 +177,72 @@ export class WorldScene extends Phaser.Scene {
     const ty = this.playerTile.y + this.facing.y;
     const target = WORLD_TEXTS.find((w) => w.x === tx && w.y === ty);
     if (!target) return;
+    if (target.kind === 'npc') this.talkToNpc(target);
+    else this.readSign(target);
+  }
 
-    const unlocked = this.rs.isTagUnlocked(target.tag);
-    if (unlocked) {
-      this.showDialog(
-        target.speaker,
-        target.text,
-        `${target.reading} — ${target.meaning}`,
-        null,
-      );
+  /** NPC 대사: 소리는 처음부터 들린다 → 뜻 해금 → 글자 해금 */
+  private talkToNpc(t: WorldText): void {
+    const meaningKnown = t.meaningTag ? this.rs.isTagUnlocked(t.meaningTag) : true;
+    const scriptKnown = t.scriptTag ? this.rs.isTagUnlocked(t.scriptTag) : false;
+
+    speakJa(t.text);
+
+    const main = scriptKnown ? t.text : `“${t.phonetic}”`;
+    let sub: string;
+    let hint: string | null = null;
+    if (meaningKnown) {
+      sub = scriptKnown ? `${t.phonetic} — ${t.meaning}` : t.meaning;
     } else {
-      const needed = this.rs.researchForTag(target.tag);
+      sub = '(무슨 뜻인지 모르겠다…)';
+      const needed = t.meaningTag ? this.rs.researchForTag(t.meaningTag) : undefined;
+      if (needed) hint = `🔬 「${needed.name}」 연구를 완료하면 뜻을 알 수 있다`;
+    }
+    const cognate = !meaningKnown && t.cognateNote ? t.cognateNote : null;
+    this.showDialog(t.speaker, main, sub, hint, t.text, cognate);
+  }
+
+  /** 간판: 글자를 알기 전엔 픽토그램으로만 추측 가능 */
+  private readSign(t: WorldText): void {
+    const known = t.scriptTag ? this.rs.isTagUnlocked(t.scriptTag) : true;
+    if (known) {
+      this.showDialog(t.speaker, t.text, `${t.phonetic} — ${t.meaning}`, null, t.text, null);
+    } else {
+      const needed = t.scriptTag ? this.rs.researchForTag(t.scriptTag) : undefined;
       this.showDialog(
-        target.speaker,
-        '???',
-        target.kind === 'npc' ? '뭐라고 말하는데 알아들을 수 없다…' : '무슨 글자인지 읽을 수 없다…',
-        needed ? `🔬 「${needed.name}」 연구를 완료하면 알 수 있다` : null,
+        t.speaker,
+        `${t.pictogram ?? ''} ???`,
+        `글자는 읽을 수 없다…${t.guess ? ` 그림을 보니 ${t.guess}.` : ''}`,
+        needed ? `🔬 「${needed.name}」 연구를 완료하면 읽을 수 있다` : null,
+        null,
+        null,
       );
     }
   }
 
-  private showDialog(speaker: string, text: string, sub: string, lockedHint: string | null): void {
+  private showDialog(
+    speaker: string,
+    text: string,
+    sub: string,
+    lockedHint: string | null,
+    speakText: string | null,
+    cognateNote: string | null,
+  ): void {
     this.dialogEl.innerHTML = `
       <div class="speaker">${speaker}</div>
-      <div class="text">${text}</div>
+      <div class="text">${text}${speakText && ttsAvailable() ? ' <button class="dialog-speak">🔊</button>' : ''}</div>
       <div class="sub">${sub}</div>
+      ${cognateNote ? `<div class="cognate">${cognateNote}</div>` : ''}
       ${lockedHint ? `<div class="locked-hint">${lockedHint}</div>` : ''}
       <div class="close-hint">스페이스/탭으로 닫기</div>
     `;
+    const speakBtn = this.dialogEl.querySelector('.dialog-speak');
+    if (speakBtn && speakText) {
+      speakBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        speakJa(speakText);
+      });
+    }
     this.dialogEl.classList.remove('hidden');
     this.dialogOpen = true;
   }
@@ -210,7 +271,7 @@ export class WorldScene extends Phaser.Scene {
     for (const w of WORLD_TEXTS) {
       const px = w.x * TILE + TILE / 2;
       const py = w.y * TILE + TILE / 2;
-      this.add.sprite(px, py, w.kind === 'npc' ? 'npc' : 'sign').setDepth(5);
+      this.add.sprite(px, py, w.kind === 'npc' ? (w.sprite ?? 'npc') : 'sign').setDepth(5);
       this.blockedCoords.add(`${w.x},${w.y}`);
 
       const label = this.add
@@ -224,15 +285,21 @@ export class WorldScene extends Phaser.Scene {
         })
         .setOrigin(0.5, 1)
         .setDepth(20);
-      this.labels.set(w, label);
+
+      if (w.kind === 'npc') {
+        // 말을 걸 수 있다는 표시 — 대사는 소리로 들리므로 ??? 표기는 쓰지 않는다
+        label.setText('💬').setFontSize(7);
+      } else {
+        this.signLabels.set(w, label);
+      }
     }
-    this.refreshWorldTexts(false);
+    this.refreshSignLabels(false);
   }
 
-  private refreshWorldTexts(celebrate: boolean): void {
-    for (const [w, label] of this.labels) {
-      const unlocked = this.rs.isTagUnlocked(w.tag);
-      const next = unlocked ? w.text : '???';
+  private refreshSignLabels(celebrate: boolean): void {
+    for (const [w, label] of this.signLabels) {
+      const unlocked = w.scriptTag ? this.rs.isTagUnlocked(w.scriptTag) : true;
+      const next = unlocked ? w.text : `${w.pictogram ?? ''}???`;
       const changed = label.text !== next && label.text !== '';
       label.setText(next);
       label.setColor(unlocked ? '#fff8d8' : '#9aa0b0');
@@ -255,6 +322,7 @@ export class WorldScene extends Phaser.Scene {
     this.makeTilesetTexture();
     this.makeCharacterTexture('player', '#3a6ea8', '#2b2233', '#f2c9a0');
     this.makeCharacterTexture('npc', '#b04a4a', '#5a3a22', '#f2c9a0');
+    this.makeCharacterTexture('npc2', '#3f9e54', '#2b2233', '#f2c9a0');
     this.makeSignTexture();
   }
 

@@ -1,5 +1,6 @@
 import type { ProblemBank, ProblemItem } from '../data/types';
 import type { ResearchSystem } from '../systems/ResearchSystem';
+import { speakJa, ttsAvailable } from '../systems/speech';
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -64,34 +65,50 @@ export class QuizPanel {
     const distractors = shuffle(pool.filter((p) => p.target !== item.target)).slice(0, 3);
     const choices = shuffle([item, ...distractors]);
 
+    // 듣기 모드: 일본어를 듣고 뜻을 고른다 (TTS 가능할 때 절반 확률)
+    const listenMode = ttsAvailable() && Math.random() < 0.5;
+
     body.innerHTML = `
       <div class="quiz-progress">연구 진행: ${current} / ${cost} RP</div>
-      <div class="quiz-question">「${item.meaning}」<br><small style="font-size:13px;color:#8a7f72">일본어로 고르세요</small></div>
+      <div class="quiz-question">
+        ${
+          listenMode
+            ? `🔊 <button class="quiz-speak">다시 듣기</button><br><small style="font-size:13px;color:#8a7f72">들리는 일본어는 무슨 뜻일까요?</small>`
+            : `「${item.meaning}」<br><small style="font-size:13px;color:#8a7f72">일본어로 고르세요</small>`
+        }
+      </div>
       <div class="quiz-choices"></div>
       <div class="quiz-feedback"></div>
     `;
     const choicesEl = body.querySelector('.quiz-choices')!;
     const feedbackEl = body.querySelector('.quiz-feedback') as HTMLElement;
 
+    if (listenMode) {
+      speakJa(item.target);
+      body.querySelector('.quiz-speak')!.addEventListener('click', () => speakJa(item.target));
+    }
+
     let answered = false;
     for (const choice of choices) {
       const btn = document.createElement('button');
       btn.className = 'quiz-choice';
-      btn.textContent = choice.target;
+      btn.textContent = listenMode ? choice.meaning : choice.target;
       btn.addEventListener('click', () => {
         if (answered) return;
         answered = true;
 
         const correct = choice.target === item.target;
+        const correctLabel = listenMode ? item.meaning : item.target;
         btn.classList.add(correct ? 'correct' : 'wrong');
         if (!correct) {
           choicesEl.querySelectorAll('.quiz-choice').forEach((el) => {
-            if (el.textContent === item.target) el.classList.add('correct');
+            if (el.textContent === correctLabel) el.classList.add('correct');
           });
         }
         feedbackEl.innerHTML = correct
-          ? `⭕ <b>${item.target}</b> — ${item.reading} <span style="color:var(--green)">+${item.rp} RP</span>`
-          : `❌ 정답: <b>${item.target}</b> — ${item.reading}`;
+          ? `⭕ <b>${item.target}</b> — ${item.reading} · ${item.meaning} <span style="color:var(--green)">+${item.rp} RP</span>`
+          : `❌ 정답: <b>${item.target}</b> — ${item.reading} · ${item.meaning}`;
+        if (!listenMode) speakJa(item.target); // 보기 모드에서도 정답 발음을 들려준다
 
         const completedId = correct ? this.rs.addRP(item.rp) : null;
 
