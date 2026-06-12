@@ -1,6 +1,7 @@
 import { flags } from '../systems/flags';
 import { inventory } from '../systems/inventory';
 import type { ResearchSystem } from '../systems/ResearchSystem';
+import { trip } from '../systems/trip';
 
 /** 저장 관리 패널: 저장 코드 내보내기/불러오기, 초기화 */
 export class SavePanel {
@@ -72,7 +73,8 @@ export class SavePanel {
         this.rs.reset();
         inventory.reset();
         flags.reset();
-        location.reload(); // 입국 심사부터 다시
+        trip.reset();
+        location.reload(); // 일정 선택·입국 심사부터 다시
       }
     });
 

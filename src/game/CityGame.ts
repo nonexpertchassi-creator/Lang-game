@@ -3,6 +3,7 @@ import { flags } from '../systems/flags';
 import { inventory } from '../systems/inventory';
 import type { ResearchSystem } from '../systems/ResearchSystem';
 import { speakJa } from '../systems/speech';
+import { trip } from '../systems/trip';
 import type { ScenarioPanel } from '../ui/ScenarioPanel';
 
 interface LocationAction {
@@ -58,6 +59,8 @@ export class CityGame {
   private screenEl: HTMLElement;
   private currentId = 'airport';
   private locations: Record<string, LocationDef>;
+  /** 📱 열기 (집 화면에서 사용) — main에서 연결 */
+  onOpenPhone?: () => void;
 
   constructor(
     private rs: ResearchSystem,
@@ -72,7 +75,19 @@ export class CityGame {
 
   start(): void {
     const last = inventory.lastLoc;
-    this.goto(last && this.locations[last] ? last : 'airport');
+    if (trip.current && last && this.locations[last]) {
+      this.goto(last);
+    } else if (flags.get('tokyo-arrived') && !trip.current) {
+      this.goto('home');
+    } else {
+      this.goto(last && this.locations[last] ? last : 'airport');
+    }
+  }
+
+  /** 박수를 정하고 여행 시작 (도쿄) */
+  startTrip(city: CityId, nights: number): void {
+    trip.start(city, nights);
+    this.travelTo(city);
   }
 
   goto(id: string): void {
@@ -179,6 +194,73 @@ export class CityGame {
     });
   }
 
+  /**
+   * 활동 상황극: 여행 중엔 하루 슬롯을 소비한다 (2개 = 밤).
+   * 인프라(체크인·이동·구매)는 슬롯을 쓰지 않으므로 play/paidScenario를 그대로 쓴다.
+   */
+  private activity(id: string, cost = 0, broke = ''): void {
+    if (trip.current && trip.isEvening) {
+      this.say(trip.isLastDay ? '🌙 날이 저물었다… 이제 공항으로 가자!' : '🌙 날이 저물었다… 호텔로 돌아가서 자자.');
+      return;
+    }
+    const after = (): void => {
+      if (trip.current) trip.recordActivity(this.scenarios[id].title);
+      this.render();
+    };
+    if (cost > 0) this.paidScenario(id, cost, broke, after);
+    else this.play(id, after);
+  }
+
+  /** ✈️ 출국 — 여행 종료, 도시 엔딩 리포트 */
+  private depart(): void {
+    const final = trip.end();
+    if (!final) return;
+    flags.set(`ended-${final.city}`);
+
+    const unique = [...new Set(final.log)];
+    const slots = final.nights * 2;
+    const ratio = unique.length / slots;
+    const grade = ratio >= 1 ? 'S' : ratio >= 0.75 ? 'A' : ratio >= 0.5 ? 'B' : 'C';
+    const logHtml = unique.length
+      ? unique.map((t) => `<li>${t}</li>`).join('')
+      : '<li>…호텔 밖을 거의 나가지 않았다. 그것도 여행이지.</li>';
+
+    const overlay = document.createElement('div');
+    overlay.className = 'panel-overlay';
+    overlay.innerHTML = `
+      <div class="panel">
+        <div class="panel-head"><h2>✈️ 귀국 — 도쿄 여행 끝</h2></div>
+        <div class="panel-body">
+          <div class="quiz-complete">
+            <div class="big">🗼 도쿄 ${final.nights}박 ${final.nights + 1}일</div>
+            <div class="ending-story">
+              창밖으로 도쿄가 멀어진다.<br>
+              아무것도 못 알아듣던 첫날의 내가, 조금은 다른 사람이 되어 돌아간다.
+            </div>
+            <div class="trip-report">
+              <div class="trip-grade">여행 등급 <b>${grade}</b></div>
+              <ul class="trip-log">${logHtml}</ul>
+              <div class="ending-stats">
+                🔬 연구 ${this.rs.completedCount}/${this.rs.defs.length}
+                · 💴 남은 여비 ¥${inventory.yen.toLocaleString()}
+              </div>
+            </div>
+            <div class="sub" style="margin-top:12px">
+              더 길게 머물수록, 더 많이 배울수록 여행은 풍성해진다.<br>
+              다음 여행은… 🏯 오사카? 아니면 도쿄 한 번 더?
+            </div>
+            <button class="quiz-next">집으로</button>
+          </div>
+        </div>
+      </div>
+    `;
+    overlay.querySelector('.quiz-next')!.addEventListener('click', () => {
+      overlay.remove();
+      this.goto('home');
+    });
+    document.getElementById('panel-root')!.appendChild(overlay);
+  }
+
   /** 간판/안내문: 문자 연구를 완료해야 읽을 수 있다 */
   private sign(label: string, tag: string, jp: string, phonetic: string, meaning: string): LocationAction {
     return {
@@ -224,7 +306,30 @@ export class CityGame {
             run: () => this.say('🗺 지도를 보니 시내까지 <b>60km</b>… 무리다. 무리.'),
           },
           { label: '🏪 공항 편의점에 들른다', run: () => this.goto('konbini') },
+          {
+            label: '✈️ 출국한다 — 여행을 마친다',
+            visible: () => !!trip.current,
+            run: () => {
+              if (!trip.isLastDay && !trip.isEvening) {
+                this.say(`🤔 아직 ${trip.current!.day}일차다 (일정: ${trip.totalDays}일). 정말 떠나려면 한 번 더 누르자… <b>아니면 도쿄를 더 즐기자!</b>`);
+                const btn = this.screenEl.querySelector('.location-feedback');
+                btn?.addEventListener('click', () => this.depart(), { once: true });
+                return;
+              }
+              this.depart();
+            },
+          },
           { label: '🛂 입국 심사 다시 해보기', run: () => this.play('tokyo-immigration') },
+        ],
+      },
+
+      home: {
+        city: 'tokyo', icon: '🏠', name: '집 (한국)',
+        desc: '여행에서 돌아온 내 방. 책상 위 일본어 노트가 눈에 들어온다. 다음엔 어디로 떠날까?',
+        bg: 'linear-gradient(160deg,#6e8cc8,#dde7f8)',
+        actions: () => [
+          { label: '✈️ 휴대폰을 열어 다음 여행을 계획한다', run: () => this.onOpenPhone?.() },
+          { label: '📓 일본어 노트를 펼친다 (연구·문제는 언제든 가능)', run: () => this.say('🔬 상단의 연구/문제 풀기 버튼으로 언제든 공부할 수 있다. 다음 여행이 쉬워진다!') },
         ],
       },
 
@@ -259,12 +364,23 @@ export class CityGame {
             run: () => this.play('hotel-checkin'),
           },
           {
+            label: '🛏 호텔에서 잔다 (다음 날로)',
+            visible: () => flags.get('done-hotel-checkin') && !!trip.current && !trip.isLastDay,
+            run: () => {
+              trip.sleep();
+              this.say(`☀️ <b>${trip.current!.day}일차 아침!</b> ${trip.isLastDay ? '오늘은 귀국일이다. 공항으로 가기 전에 마지막으로 뭘 할까?' : '오늘은 도쿄에서 뭘 해볼까?'}`);
+              this.render();
+            },
+          },
+          {
             label: '🏨 호텔에서 쉰다',
-            visible: () => flags.get('done-hotel-checkin'),
-            run: () => this.say('🛏 방에서 한숨 돌렸다. 다시 나갈 힘이 난다!'),
+            visible: () => flags.get('done-hotel-checkin') && (!trip.current || trip.isLastDay),
+            run: () => this.say('🛏 방에서 한숨 돌렸다.' + (trip.isLastDay ? ' 오늘은 귀국일 — 비행기 시간을 잊지 말자!' : '')),
           },
           { label: '🍜 라멘 가게에 들어간다', run: () => this.goto('ramen') },
           { label: '⛩ 아사쿠사에 가본다', run: () => this.goto('asakusa') },
+          { label: '☕ 카페에 들어간다 (¥500)', run: () => this.activity('cafe-order', 500, '💸 커피 한 잔 값이 없다…') },
+          { label: '🎤 가라오케에 간다 (¥1,500)', run: () => this.activity('karaoke', 1500, '💸 가라오케 갈 돈이 없다… 길에서 흥얼거린다.') },
           this.sign('🪧 역 표지판을 읽어본다', 'kanji', '駅', '에키', '역'),
           {
             label: '🚆 전철로 공항에 돌아간다',
@@ -286,7 +402,7 @@ export class CityGame {
         actions: () => [
           {
             label: '🍜 자리에 앉아 주문한다 (¥900)',
-            run: () => this.paidScenario('ramen-order', 900, '💸 라멘 한 그릇 값도 없다니… 눈물이 난다.'),
+            run: () => this.activity('ramen-order', 900, '💸 라멘 한 그릇 값도 없다니… 눈물이 난다.'),
           },
           this.sign('🪧 가게 간판을 읽어본다', 'food', 'らーめん', '라-멘', '라멘'),
           this.sign('🪧 벽의 메뉴판을 본다', 'hiragana', 'すし・みず・おちゃ', '스시·미즈·오챠', '초밥·물·차'),
@@ -299,7 +415,7 @@ export class CityGame {
         desc: '거대한 붉은 등불, 향 연기, 관광객의 물결. 도쿄에서 가장 오래된 절이다.',
         bg: 'linear-gradient(160deg,#d96459,#f7ddc8)',
         actions: () => [
-          { label: '📷 사진을 부탁받았다…?', run: () => this.play('asakusa-photo') },
+          { label: '📷 사진을 부탁받았다…?', run: () => this.activity('asakusa-photo') },
           this.sign('🪧 입구 안내문을 읽어본다', 'kanji', '入口', '이리구치', '입구'),
           { label: '🙏 향 연기를 머리에 쐰다', run: () => this.say('💨 향 연기를 쐬면 머리가 좋아진다는 속설이 있다. 연구가 잘 될지도…?') },
           { label: '↩️ 거리로 돌아간다', run: () => this.goto('street') },
@@ -406,17 +522,22 @@ export class CityGame {
   private render(): void {
     const loc = this.locations[this.currentId];
     const meta = CITIES[loc.city];
+    const isHome = this.currentId === 'home';
     const bag = inventory.items.length ? inventory.items.join(', ') : '비어 있음';
-    const stamps = (['tokyo', 'osaka', 'yonago'] as CityId[])
-      .map((c) => (this.hasStamp(c) ? '✅' : '⬜'))
-      .join('');
+    const badge = isHome ? '🇰🇷 휴식' : `${meta.name} Lv${meta.lv}`;
+
+    const t = trip.current;
+    const tripBar =
+      t && !isHome && loc.city === t.city
+        ? ` · 🗓 ${t.day}/${trip.totalDays}일차 ${trip.isEvening ? '🌙 밤' : '☀️ 낮'}${trip.isLastDay ? ' <b>(귀국일!)</b>' : ''}`
+        : '';
 
     this.screenEl.innerHTML = `
       <div class="location">
         <div class="location-banner" style="background:${loc.bg}"><span>${loc.icon}</span></div>
-        <h1 class="location-name">${loc.name} <span class="city-lv">${meta.name} Lv${meta.lv}</span></h1>
+        <h1 class="location-name">${loc.name} <span class="city-lv">${badge}</span></h1>
         <p class="location-desc">${loc.desc}</p>
-        <div class="status-bar">💴 ¥${inventory.yen.toLocaleString()} · 🎒 ${bag} · 🎖 ${stamps}</div>
+        <div class="status-bar">💴 ¥${inventory.yen.toLocaleString()} · 🎒 ${bag}${tripBar}</div>
         <div class="action-list"></div>
         <div class="location-feedback"></div>
       </div>

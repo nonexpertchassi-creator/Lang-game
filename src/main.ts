@@ -31,6 +31,7 @@ const playImmigration = (): void => {
   });
 };
 const phonePanel = new PhonePanel(rs, city, playImmigration);
+city.onOpenPhone = () => phonePanel.open();
 
 new Hud(
   rs,
@@ -42,7 +43,12 @@ new Hud(
 
 city.start();
 
-// 첫 방문: 도쿄 입국 심사부터 시작한다
+// 첫 방문: 일정(박수) 선택 → 도쿄 입국 심사 → 여행 시작
 if (!flags.get('tokyo-arrived')) {
-  setTimeout(playImmigration, 400);
+  setTimeout(() => {
+    phonePanel.openTripSetup((nights) => {
+      city.startTrip('tokyo', nights);
+      playImmigration();
+    });
+  }, 400);
 }
