@@ -30,7 +30,7 @@ const playImmigration = (): void => {
     city.goto('airport');
   });
 };
-const phonePanel = new PhonePanel(rs, playImmigration);
+const phonePanel = new PhonePanel(rs, city, playImmigration);
 
 new Hud(
   rs,

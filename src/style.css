@@ -169,6 +169,16 @@ html, body { height: 100%; background: #1a1422; overflow: hidden; }
 .save-msg { font-size: 13px; color: var(--ink); margin-top: 10px; min-height: 18px; font-weight: 600; }
 
 .quiz-complete { text-align: center; padding: 24px 8px; }
+.ending-story { font-size: 15px; color: var(--ink); line-height: 1.8; margin: 14px 0; }
+.ending-stamps { display: flex; justify-content: center; gap: 10px; margin: 12px 0; }
+.ending-stamps span {
+  border: 3px solid var(--green); color: var(--green); font-weight: 800;
+  border-radius: 50%; padding: 14px 8px; font-size: 13px; transform: rotate(-8deg);
+  background: #fff;
+}
+.ending-stamps span:nth-child(2) { transform: rotate(5deg); }
+.ending-stamps span:nth-child(3) { transform: rotate(-3deg); }
+.ending-stats { font-size: 14px; color: #6f6457; margin-top: 8px; }
 .quiz-complete .big { font-size: 26px; font-weight: 800; color: var(--green); margin-bottom: 8px; }
 .quiz-complete .sub { font-size: 14px; color: #6f6457; }
 
