@@ -9,7 +9,7 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
-html, body { height: 100%; background: #1a1422; overflow: hidden; }
+html, body { height: 100%; background: #f3e9d6; overflow: hidden; }
 
 #app {
   position: relative; width: 100%; height: 100%;
@@ -55,6 +55,42 @@ html, body { height: 100%; background: #1a1422; overflow: hidden; }
   background: var(--accent); color: #fff; border: 2px solid var(--ink); border-radius: 6px;
   font-size: 14px; font-weight: 700; padding: 4px 12px; cursor: pointer; vertical-align: middle;
 }
+
+/* ---------- 장소 화면 ---------- */
+#screen-root {
+  flex: 1; overflow-y: auto;
+  display: flex; justify-content: center;
+  padding: 4px 12px 24px;
+}
+.location { width: min(640px, 100%); }
+.location-banner {
+  height: 110px; border: 4px solid var(--ink); border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 4px 4px 0 rgba(0,0,0,.25);
+}
+.location-banner span { font-size: 56px; filter: drop-shadow(2px 2px 0 rgba(0,0,0,.2)); }
+.location-name { font-size: 21px; color: var(--ink); margin: 14px 0 4px; }
+.location-desc { font-size: 14px; color: #5f5648; margin-bottom: 10px; line-height: 1.6; }
+.status-bar {
+  background: #fff; color: var(--ink); border: 3px solid var(--ink);
+  font-size: 14px; font-weight: 600; padding: 8px 12px; border-radius: 8px; margin-bottom: 12px;
+  box-shadow: 3px 3px 0 rgba(0,0,0,.15);
+}
+.action-list { display: flex; flex-direction: column; gap: 9px; }
+.action-btn-row {
+  text-align: left; font-size: 15px; font-weight: 600;
+  background: #fff; color: var(--ink);
+  border: 3px solid var(--ink); border-radius: 8px;
+  padding: 13px 14px; cursor: pointer;
+  box-shadow: 3px 3px 0 rgba(0,0,0,.2);
+}
+.action-btn-row:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 rgba(0,0,0,.2); }
+.location-feedback {
+  margin-top: 12px; font-size: 14px; line-height: 1.7; color: var(--ink);
+  background: #fff8ea; border: 3px solid var(--ink); border-radius: 8px;
+  padding: 11px 13px; min-height: 20px;
+}
+.location-feedback:empty { display: none; }
 
 /* ---------- 패널 (연구 트리 / 퀴즈) ---------- */
 .panel-overlay {
