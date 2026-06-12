@@ -37,6 +37,10 @@ export class ResearchSystem {
     return this.state.active;
   }
 
+  get completedCount(): number {
+    return this.state.completed.length;
+  }
+
   isCompleted(id: string): boolean {
     return this.state.completed.includes(id);
   }

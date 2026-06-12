@@ -14,6 +14,7 @@ export class Hud {
     onOpenResearch: () => void,
     onOpenQuiz: () => void,
     onOpenSave: () => void,
+    onOpenPhone: () => void,
   ) {
     this.root = document.getElementById('hud')!;
     this.root.innerHTML = `
@@ -25,6 +26,7 @@ export class Hud {
       </div>
       <button class="hud-btn" id="btn-research">🔬 연구</button>
       <button class="hud-btn secondary" id="btn-quiz">✏️ 문제 풀기</button>
+      <button class="hud-btn neutral" id="btn-phone">📱</button>
       <button class="hud-btn neutral" id="btn-save">💾</button>
     `;
     this.nameEl = this.root.querySelector('.name')!;
@@ -36,6 +38,7 @@ export class Hud {
     this.researchBtn.addEventListener('click', onOpenResearch);
     this.quizBtn.addEventListener('click', onOpenQuiz);
     this.root.querySelector('#btn-save')!.addEventListener('click', onOpenSave);
+    this.root.querySelector('#btn-phone')!.addEventListener('click', onOpenPhone);
 
     rs.on('changed', () => this.refresh());
     this.refresh();

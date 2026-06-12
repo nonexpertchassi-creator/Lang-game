@@ -69,7 +69,7 @@ html, body { height: 100%; background: #1a1422; overflow: hidden; }
 #dialog .text { font-size: 20px; color: var(--ink); margin: 4px 0; }
 #dialog .sub { font-size: 13px; color: #6f6457; }
 #dialog .locked-hint { font-size: 13px; color: var(--accent); margin-top: 6px; font-weight: 600; }
-#dialog .cognate { font-size: 13px; color: var(--green); margin-top: 6px; font-weight: 700; }
+.cognate { font-size: 13px; color: var(--green); margin-top: 6px; font-weight: 700; }
 .dialog-speak {
   background: none; border: 2px solid var(--ink); border-radius: 6px;
   font-size: 14px; padding: 2px 8px; cursor: pointer; vertical-align: middle;
@@ -159,6 +159,22 @@ html, body { height: 100%; background: #1a1422; overflow: hidden; }
   background: #fff; color: var(--ink); border: 3px solid var(--ink); border-radius: 8px;
 }
 .arrange-block.placed { background: #fff3ee; border-color: var(--accent); }
+
+/* 상황극 */
+.scenario-hearts { font-size: 16px; letter-spacing: 2px; }
+.scenario-intro { font-size: 15px; color: var(--ink); line-height: 1.7; padding: 8px 4px 16px; }
+.scenario-speaker { font-size: 12px; color: var(--accent); font-weight: 700; }
+.scenario-hint { font-size: 13px; color: #6f6457; font-style: italic; margin-bottom: 10px; }
+.scenario-choices { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+.scenario-choices .quiz-choice { font-size: 16px; text-align: left; padding: 12px 14px; }
+.scenario-choices .quiz-choice:disabled { cursor: default; }
+
+/* 스마트폰 */
+.city-lv {
+  font-size: 11px; font-weight: 800; color: #fff; background: var(--accent);
+  border-radius: 4px; padding: 1px 6px; margin-left: 4px; vertical-align: middle;
+}
+.city-card.locked { opacity: .6; }
 
 /* 저장 관리 */
 .save-note { font-size: 13px; color: #6f6457; margin-bottom: 12px; }

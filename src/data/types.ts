@@ -31,3 +31,32 @@ export interface ProblemItem {
 
 /** 연구 id → 문제 목록 */
 export type ProblemBank = Record<string, ProblemItem[]>;
+
+/** 상황극(시나리오)의 한 장면 */
+export interface ScenarioStep {
+  speaker: string;
+  /** 일본어 원문 (TTS 재생용) */
+  text: string;
+  /** 한글 음차 — 플레이어에게 보이는 "들리는 소리" */
+  phonetic: string;
+  /** 눈치/상황 힌트 */
+  hint?: string;
+  /** 한국어 유사 단어 노트 */
+  cognateNote?: string;
+  choices: {
+    label: string;
+    correct: boolean;
+    /** 오답 시 보여줄 반응 */
+    fail?: string;
+  }[];
+}
+
+/** 상황극 정의 — 오답 시 하트가 깎이고, 0이 되면 처음부터 */
+export interface ScenarioDef {
+  id: string;
+  title: string;
+  intro: string;
+  success: string;
+  hearts: number;
+  steps: ScenarioStep[];
+}
