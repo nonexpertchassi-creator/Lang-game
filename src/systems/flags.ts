@@ -24,4 +24,11 @@ export const flags = {
       // 저장 불가 환경 무시
     }
   },
+  reset(): void {
+    try {
+      localStorage.removeItem(KEY);
+    } catch {
+      // 무시
+    }
+  },
 };

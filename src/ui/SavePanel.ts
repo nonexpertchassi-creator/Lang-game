@@ -1,3 +1,5 @@
+import { flags } from '../systems/flags';
+import { inventory } from '../systems/inventory';
 import type { ResearchSystem } from '../systems/ResearchSystem';
 
 /** 저장 관리 패널: 저장 코드 내보내기/불러오기, 초기화 */
@@ -66,10 +68,11 @@ export class SavePanel {
     });
 
     overlay.querySelector('.reset-btn')!.addEventListener('click', () => {
-      if (confirm('정말 모든 진행을 지우고 처음부터 시작할까요?')) {
+      if (confirm('정말 모든 진행(연구·돈·아이템)을 지우고 처음부터 시작할까요?')) {
         this.rs.reset();
-        exportArea.value = this.rs.exportCode();
-        msgEl.textContent = '초기화되었습니다.';
+        inventory.reset();
+        flags.reset();
+        location.reload(); // 입국 심사부터 다시
       }
     });
 
