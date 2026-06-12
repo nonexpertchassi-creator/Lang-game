@@ -5,6 +5,7 @@ import { ResearchSystem } from './systems/ResearchSystem';
 import { Hud } from './ui/Hud';
 import { ResearchPanel } from './ui/ResearchPanel';
 import { QuizPanel } from './ui/QuizPanel';
+import { SavePanel } from './ui/SavePanel';
 import { setupTouchControls } from './ui/TouchControls';
 import researchJson from './data/ja/research.json';
 import problemsJson from './data/ja/problems.json';
@@ -16,10 +17,12 @@ const problemBank = problemsJson as ProblemBank;
 const rs = new ResearchSystem(researchDefs);
 const researchPanel = new ResearchPanel(rs);
 const quizPanel = new QuizPanel(rs, problemBank);
+const savePanel = new SavePanel(rs);
 new Hud(
   rs,
   () => researchPanel.open(),
   () => quizPanel.open(),
+  () => savePanel.open(),
 );
 setupTouchControls();
 

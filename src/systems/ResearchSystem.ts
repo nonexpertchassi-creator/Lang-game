@@ -97,6 +97,43 @@ export class ResearchSystem {
     return completedId;
   }
 
+  /** 진행 상황을 휴대 가능한 저장 코드로 내보낸다 (기기 변경/초기화 대비) */
+  exportCode(): string {
+    const payload = JSON.stringify({ v: 1, ...this.state });
+    return btoa(String.fromCharCode(...new TextEncoder().encode(payload)));
+  }
+
+  /** 저장 코드로 진행 상황을 복원한다 */
+  importCode(code: string): boolean {
+    try {
+      const bytes = Uint8Array.from(atob(code.trim()), (c) => c.charCodeAt(0));
+      const parsed = JSON.parse(new TextDecoder().decode(bytes)) as Partial<SaveState> & {
+        v?: number;
+      };
+      if (parsed.v !== 1 || !Array.isArray(parsed.completed)) return false;
+      const validIds = new Set(this.defs.map((d) => d.id));
+      this.state = {
+        completed: parsed.completed.filter((id) => validIds.has(id)),
+        active: parsed.active && validIds.has(parsed.active) ? parsed.active : null,
+        rp: parsed.rp && typeof parsed.rp === 'object' ? parsed.rp : {},
+      };
+      this.save();
+      this.emit('changed', '');
+      this.emit('completed', ''); // 월드 간판 갱신용
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /** 진행 초기화 */
+  reset(): void {
+    this.state = { completed: [], active: null, rp: {} };
+    this.save();
+    this.emit('changed', '');
+    this.emit('completed', '');
+  }
+
   on(event: EventName, fn: (id: string) => void): void {
     this.listeners[event].push(fn);
   }

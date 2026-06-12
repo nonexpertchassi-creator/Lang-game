@@ -26,7 +26,9 @@
     { "target": "すみません", "reading": "스미마셍 (sumimasen)", "meaning": "실례합니다 / 죄송합니다", "rp": 10 },
     { "target": "さようなら", "reading": "사요-나라 (sayounara)", "meaning": "안녕히 가세요", "rp": 10 },
     { "target": "はい", "reading": "하이 (hai)", "meaning": "네", "rp": 10 },
-    { "target": "いいえ", "reading": "이-에 (iie)", "meaning": "아니요", "rp": 10 }
+    { "target": "いいえ", "reading": "이-에 (iie)", "meaning": "아니요", "rp": 10 },
+    { "target": "おはよう ございます", "blocks": ["おはよう", "ございます"], "reading": "오하요- 고자이마스 (ohayou gozaimasu)", "meaning": "안녕하세요 (정중한 아침 인사)", "rp": 15 },
+    { "target": "ありがとう ございます", "blocks": ["ありがとう", "ございます"], "reading": "아리가토- 고자이마스 (arigatou gozaimasu)", "meaning": "감사합니다 (정중하게)", "rp": 15 }
   ],
   "ja-numbers": [
     { "target": "いち", "reading": "이치 (ichi)", "meaning": "1 (하나)", "rp": 10 },
@@ -36,7 +38,8 @@
     { "target": "ご", "reading": "고 (go)", "meaning": "5 (다섯)", "rp": 10 },
     { "target": "ひゃく", "reading": "햐쿠 (hyaku)", "meaning": "100 (백)", "rp": 10 },
     { "target": "円", "reading": "엔 (en)", "meaning": "엔 (일본 화폐 단위)", "rp": 10 },
-    { "target": "いくらですか", "reading": "이쿠라데스카 (ikura desu ka)", "meaning": "얼마예요?", "rp": 15 }
+    { "target": "いくらですか", "reading": "이쿠라데스카 (ikura desu ka)", "meaning": "얼마예요?", "rp": 15 },
+    { "target": "これは いくら ですか", "blocks": ["これは", "いくら", "ですか"], "reading": "코레와 이쿠라 데스카 (kore wa ikura desu ka)", "meaning": "이것은 얼마예요?", "rp": 20 }
   ],
   "ja-food-words": [
     { "target": "すし", "reading": "스시 (sushi)", "meaning": "초밥", "rp": 10 },
@@ -54,7 +57,10 @@
     { "target": "おいしい", "reading": "오이시- (oishii)", "meaning": "맛있어요", "rp": 10 },
     { "target": "おすすめ", "reading": "오스스메 (osusume)", "meaning": "추천 (메뉴)", "rp": 10 },
     { "target": "おかいけい", "reading": "오카이케- (okaikei)", "meaning": "계산서 / 계산할게요", "rp": 15 },
-    { "target": "いただきます", "reading": "이타다키마스 (itadakimasu)", "meaning": "잘 먹겠습니다", "rp": 15 }
+    { "target": "いただきます", "reading": "이타다키마스 (itadakimasu)", "meaning": "잘 먹겠습니다", "rp": 15 },
+    { "target": "これを ください", "blocks": ["これを", "ください"], "reading": "코레오 쿠다사이 (kore o kudasai)", "meaning": "이거 주세요", "rp": 15 },
+    { "target": "メニューを おねがいします", "blocks": ["メニューを", "おねがいします"], "reading": "메뉴-오 오네가이시마스 (menyuu o onegaishimasu)", "meaning": "메뉴판 부탁해요", "rp": 20 },
+    { "target": "おかいけいを おねがいします", "blocks": ["おかいけいを", "おねがいします"], "reading": "오카이케-오 오네가이시마스 (okaikei o onegaishimasu)", "meaning": "계산서 부탁해요", "rp": 20 }
   ],
   "ja-directions": [
     { "target": "どこですか", "reading": "도코데스카 (doko desu ka)", "meaning": "어디예요?", "rp": 15 },
@@ -64,7 +70,9 @@
     { "target": "えき", "reading": "에키 (eki)", "meaning": "역", "rp": 10 },
     { "target": "トイレ", "reading": "토이레 (toire)", "meaning": "화장실", "rp": 10 },
     { "target": "ちかい", "reading": "치카이 (chikai)", "meaning": "가까워요", "rp": 10 },
-    { "target": "とおい", "reading": "토-이 (tooi)", "meaning": "멀어요", "rp": 10 }
+    { "target": "とおい", "reading": "토-이 (tooi)", "meaning": "멀어요", "rp": 10 },
+    { "target": "えきは どこ ですか", "blocks": ["えきは", "どこ", "ですか"], "reading": "에키와 도코 데스카 (eki wa doko desu ka)", "meaning": "역은 어디예요?", "rp": 20 },
+    { "target": "トイレは どこ ですか", "blocks": ["トイレは", "どこ", "ですか"], "reading": "토이레와 도코 데스카 (toire wa doko desu ka)", "meaning": "화장실은 어디예요?", "rp": 20 }
   ],
   "ja-kanji-basic": [
     { "target": "駅", "reading": "에키 (eki)", "meaning": "역 (기차역)", "rp": 15 },

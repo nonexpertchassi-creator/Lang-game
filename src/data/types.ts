@@ -25,6 +25,8 @@ export interface ProblemItem {
   meaning: string;
   /** 정답 시 획득 RP */
   rp: number;
+  /** 문장 조립 문제: 순서대로 배열할 단어 블록 (있으면 조립 모드로 출제) */
+  blocks?: string[];
 }
 
 /** 연구 id → 문제 목록 */

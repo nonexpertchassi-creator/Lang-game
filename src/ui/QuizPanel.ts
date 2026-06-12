@@ -62,78 +62,183 @@ export class QuizPanel {
     onNext: () => void,
   ): void {
     const { current, cost } = this.rs.progress(researchId);
+    body.innerHTML = `<div class="quiz-progress">연구 진행: ${current} / ${cost} RP</div>`;
+
+    const feedbackEl = document.createElement('div');
+    feedbackEl.className = 'quiz-feedback';
+
+    /** 채점 공통 처리: 피드백 → RP 적립 → 완료/다음 */
+    const finish = (correct: boolean): void => {
+      feedbackEl.innerHTML = correct
+        ? `⭕ <b>${item.target}</b> — ${item.reading} · ${item.meaning} <span style="color:var(--green)">+${item.rp} RP</span>`
+        : `❌ 정답: <b>${item.target}</b> — ${item.reading} · ${item.meaning}`;
+      speakJa(item.target);
+
+      const completedId = correct ? this.rs.addRP(item.rp) : null;
+      if (completedId) {
+        const doneDef = this.rs.get(completedId)!;
+        setTimeout(() => {
+          body.innerHTML = `
+            <div class="quiz-complete">
+              <div class="big">🎉 연구 완료!</div>
+              <div class="sub">「${doneDef.name}」 — 이제 월드에서 관련 글자가 읽힙니다.<br>마을을 돌아다니며 확인해 보세요!</div>
+              <button class="quiz-next">월드로 돌아가기</button>
+            </div>
+          `;
+          body.querySelector('.quiz-next')!.addEventListener('click', () => overlay.remove());
+        }, 900);
+        return;
+      }
+      const nextBtn = document.createElement('button');
+      nextBtn.className = 'quiz-next';
+      nextBtn.textContent = '다음 문제 →';
+      nextBtn.addEventListener('click', onNext);
+      body.appendChild(nextBtn);
+    };
+
+    if (item.blocks && item.blocks.length >= 2) {
+      this.renderArrange(body, item, feedbackEl, finish);
+    } else if (ttsAvailable() && Math.random() < 0.5) {
+      this.renderListen(body, item, pool, feedbackEl, finish);
+    } else {
+      this.renderMatch(body, item, pool, feedbackEl, finish);
+    }
+    body.appendChild(feedbackEl);
+  }
+
+  /** 보기 모드: 뜻을 보고 일본어 고르기 */
+  private renderMatch(
+    body: HTMLElement,
+    item: ProblemItem,
+    pool: ProblemItem[],
+    feedbackEl: HTMLElement,
+    finish: (correct: boolean) => void,
+  ): void {
+    body.insertAdjacentHTML(
+      'beforeend',
+      `<div class="quiz-question">「${item.meaning}」<br><small style="font-size:13px;color:#8a7f72">일본어로 고르세요</small></div>
+       <div class="quiz-choices"></div>`,
+    );
+    this.fillChoices(body, item, pool, false, feedbackEl, finish);
+  }
+
+  /** 듣기 모드: 일본어를 듣고 뜻 고르기 */
+  private renderListen(
+    body: HTMLElement,
+    item: ProblemItem,
+    pool: ProblemItem[],
+    feedbackEl: HTMLElement,
+    finish: (correct: boolean) => void,
+  ): void {
+    body.insertAdjacentHTML(
+      'beforeend',
+      `<div class="quiz-question">🔊 <button class="quiz-speak">다시 듣기</button><br><small style="font-size:13px;color:#8a7f72">들리는 일본어는 무슨 뜻일까요?</small></div>
+       <div class="quiz-choices"></div>`,
+    );
+    speakJa(item.target);
+    body.querySelector('.quiz-speak')!.addEventListener('click', () => speakJa(item.target));
+    this.fillChoices(body, item, pool, true, feedbackEl, finish);
+  }
+
+  private fillChoices(
+    body: HTMLElement,
+    item: ProblemItem,
+    pool: ProblemItem[],
+    showMeaning: boolean,
+    _feedbackEl: HTMLElement,
+    finish: (correct: boolean) => void,
+  ): void {
     const distractors = shuffle(pool.filter((p) => p.target !== item.target)).slice(0, 3);
     const choices = shuffle([item, ...distractors]);
-
-    // 듣기 모드: 일본어를 듣고 뜻을 고른다 (TTS 가능할 때 절반 확률)
-    const listenMode = ttsAvailable() && Math.random() < 0.5;
-
-    body.innerHTML = `
-      <div class="quiz-progress">연구 진행: ${current} / ${cost} RP</div>
-      <div class="quiz-question">
-        ${
-          listenMode
-            ? `🔊 <button class="quiz-speak">다시 듣기</button><br><small style="font-size:13px;color:#8a7f72">들리는 일본어는 무슨 뜻일까요?</small>`
-            : `「${item.meaning}」<br><small style="font-size:13px;color:#8a7f72">일본어로 고르세요</small>`
-        }
-      </div>
-      <div class="quiz-choices"></div>
-      <div class="quiz-feedback"></div>
-    `;
     const choicesEl = body.querySelector('.quiz-choices')!;
-    const feedbackEl = body.querySelector('.quiz-feedback') as HTMLElement;
-
-    if (listenMode) {
-      speakJa(item.target);
-      body.querySelector('.quiz-speak')!.addEventListener('click', () => speakJa(item.target));
-    }
-
     let answered = false;
+
     for (const choice of choices) {
       const btn = document.createElement('button');
       btn.className = 'quiz-choice';
-      btn.textContent = listenMode ? choice.meaning : choice.target;
+      btn.textContent = showMeaning ? choice.meaning : choice.target;
       btn.addEventListener('click', () => {
         if (answered) return;
         answered = true;
-
         const correct = choice.target === item.target;
-        const correctLabel = listenMode ? item.meaning : item.target;
+        const correctLabel = showMeaning ? item.meaning : item.target;
         btn.classList.add(correct ? 'correct' : 'wrong');
         if (!correct) {
           choicesEl.querySelectorAll('.quiz-choice').forEach((el) => {
             if (el.textContent === correctLabel) el.classList.add('correct');
           });
         }
-        feedbackEl.innerHTML = correct
-          ? `⭕ <b>${item.target}</b> — ${item.reading} · ${item.meaning} <span style="color:var(--green)">+${item.rp} RP</span>`
-          : `❌ 정답: <b>${item.target}</b> — ${item.reading} · ${item.meaning}`;
-        if (!listenMode) speakJa(item.target); // 보기 모드에서도 정답 발음을 들려준다
-
-        const completedId = correct ? this.rs.addRP(item.rp) : null;
-
-        if (completedId) {
-          const doneDef = this.rs.get(completedId)!;
-          setTimeout(() => {
-            body.innerHTML = `
-              <div class="quiz-complete">
-                <div class="big">🎉 연구 완료!</div>
-                <div class="sub">「${doneDef.name}」 — 이제 월드에서 관련 글자가 읽힙니다.<br>마을을 돌아다니며 확인해 보세요!</div>
-                <button class="quiz-next">월드로 돌아가기</button>
-              </div>
-            `;
-            body.querySelector('.quiz-next')!.addEventListener('click', () => overlay.remove());
-          }, 900);
-          return;
-        }
-
-        const nextBtn = document.createElement('button');
-        nextBtn.className = 'quiz-next';
-        nextBtn.textContent = '다음 문제 →';
-        nextBtn.addEventListener('click', onNext);
-        body.appendChild(nextBtn);
+        finish(correct);
       });
       choicesEl.appendChild(btn);
     }
+  }
+
+  /** 조립 모드: 단어 블록을 순서대로 배열해 문장 완성 */
+  private renderArrange(
+    body: HTMLElement,
+    item: ProblemItem,
+    _feedbackEl: HTMLElement,
+    finish: (correct: boolean) => void,
+  ): void {
+    body.insertAdjacentHTML(
+      'beforeend',
+      `<div class="quiz-question">「${item.meaning}」<br><small style="font-size:13px;color:#8a7f72">단어 블록을 순서대로 눌러 문장을 만드세요</small></div>
+       <div class="arrange-answer"></div>
+       <div class="arrange-pool"></div>
+       <button class="quiz-next arrange-check" disabled>확인</button>`,
+    );
+    const answerEl = body.querySelector('.arrange-answer') as HTMLElement;
+    const poolEl = body.querySelector('.arrange-pool') as HTMLElement;
+    const checkBtn = body.querySelector('.arrange-check') as HTMLButtonElement;
+
+    const blocks = item.blocks!;
+    // 처음부터 정답 순서로 나오지 않게 섞는다
+    let order = shuffle(blocks.map((_, i) => i));
+    for (let tries = 0; tries < 10 && order.every((v, i) => v === i); tries++) {
+      order = shuffle(blocks.map((_, i) => i));
+    }
+
+    const placed: number[] = [];
+    let answered = false;
+
+    const redraw = (): void => {
+      answerEl.innerHTML = placed.length ? '' : '<span class="arrange-hint">여기에 문장이 만들어집니다</span>';
+      for (const bi of placed) {
+        const b = document.createElement('button');
+        b.className = 'arrange-block placed';
+        b.textContent = blocks[bi];
+        b.addEventListener('click', () => {
+          if (answered) return;
+          placed.splice(placed.indexOf(bi), 1);
+          redraw();
+        });
+        answerEl.appendChild(b);
+      }
+      poolEl.innerHTML = '';
+      for (const bi of order) {
+        if (placed.includes(bi)) continue;
+        const b = document.createElement('button');
+        b.className = 'arrange-block';
+        b.textContent = blocks[bi];
+        b.addEventListener('click', () => {
+          if (answered) return;
+          placed.push(bi);
+          redraw();
+        });
+        poolEl.appendChild(b);
+      }
+      checkBtn.disabled = placed.length !== blocks.length;
+    };
+    redraw();
+
+    checkBtn.addEventListener('click', () => {
+      if (answered || placed.length !== blocks.length) return;
+      answered = true;
+      checkBtn.remove();
+      const correct = placed.every((bi, i) => blocks[bi] === blocks[i]);
+      answerEl.classList.add(correct ? 'arrange-correct' : 'arrange-wrong');
+      finish(correct);
+    });
   }
 }
