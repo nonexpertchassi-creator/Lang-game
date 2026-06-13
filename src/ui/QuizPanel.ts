@@ -148,7 +148,16 @@ export class QuizPanel {
     _feedbackEl: HTMLElement,
     finish: (correct: boolean) => void,
   ): void {
-    const distractors = shuffle(pool.filter((p) => p.target !== item.target)).slice(0, 3);
+    const label = (p: ProblemItem): string => (showMeaning ? p.meaning : p.target);
+    // 표시 텍스트가 겹치면 "같은 보기 2개 중 하나만 정답"이 되므로 중복 라벨 제외
+    const seen = new Set([label(item)]);
+    const distractors: ProblemItem[] = [];
+    for (const p of shuffle(pool)) {
+      if (p.target === item.target || seen.has(label(p))) continue;
+      seen.add(label(p));
+      distractors.push(p);
+      if (distractors.length === 3) break;
+    }
     const choices = shuffle([item, ...distractors]);
     const choicesEl = body.querySelector('.quiz-choices')!;
     let answered = false;
