@@ -98,57 +98,74 @@ export class QuizPanel {
 
     if (item.blocks && item.blocks.length >= 2) {
       this.renderArrange(body, item, feedbackEl, finish);
-    } else if (ttsAvailable() && Math.random() < 0.5) {
-      this.renderListen(body, item, pool, feedbackEl, finish);
     } else {
-      this.renderMatch(body, item, pool, feedbackEl, finish);
+      // 세 방향으로 같은 단어를 복습 — 소리가 문제면 보기는 일본어 글자여야 한다
+      const modes = [
+        (): void => this.renderProduce(body, item, pool, finish),
+        (): void => this.renderRead(body, item, pool, finish),
+      ];
+      if (ttsAvailable()) modes.push((): void => this.renderListen(body, item, pool, finish));
+      modes[Math.floor(Math.random() * modes.length)]();
     }
     body.appendChild(feedbackEl);
   }
 
-  /** 보기 모드: 뜻을 보고 일본어 고르기 */
-  private renderMatch(
+  /** 작문: 한글 뜻을 보고 일본어를 고른다 (보기 발음 들으며 비교) */
+  private renderProduce(
     body: HTMLElement,
     item: ProblemItem,
     pool: ProblemItem[],
-    feedbackEl: HTMLElement,
     finish: (correct: boolean) => void,
   ): void {
     body.insertAdjacentHTML(
       'beforeend',
-      `<div class="quiz-question">「${item.meaning}」<br><small style="font-size:13px;color:#8a7f72">보기를 누르면 발음이 들려요 — 다 들어보고 제출!</small></div>
+      `<div class="quiz-question">「${item.meaning}」<br><small style="font-size:13px;color:#8a7f72">일본어로 고르세요 · 보기를 누르면 발음이 들려요</small></div>
        <div class="quiz-choices"></div>`,
     );
-    this.fillChoices(body, item, pool, false, feedbackEl, finish);
+    this.fillChoices(body, item, pool, { choiceField: 'target', playOnSelect: true }, finish);
   }
 
-  /** 듣기 모드: 일본어를 듣고 뜻 고르기 */
+  /** 읽기: 일본어 글자를 보고 무슨 뜻인지 고른다 (발음 없음 — 읽을 줄 알아야 풀림) */
+  private renderRead(
+    body: HTMLElement,
+    item: ProblemItem,
+    pool: ProblemItem[],
+    finish: (correct: boolean) => void,
+  ): void {
+    body.insertAdjacentHTML(
+      'beforeend',
+      `<div class="quiz-question">${item.target}<br><small style="font-size:13px;color:#8a7f72">이 일본어를 읽어보세요 — 무슨 뜻일까요?</small></div>
+       <div class="quiz-choices"></div>`,
+    );
+    this.fillChoices(body, item, pool, { choiceField: 'meaning', playOnSelect: false }, finish);
+  }
+
+  /** 듣기: 소리를 듣고 일본어 글자를 고른다 (보기는 글자 — 글자를 알아야 풀림) */
   private renderListen(
     body: HTMLElement,
     item: ProblemItem,
     pool: ProblemItem[],
-    feedbackEl: HTMLElement,
     finish: (correct: boolean) => void,
   ): void {
     body.insertAdjacentHTML(
       'beforeend',
-      `<div class="quiz-question">🔊 <button class="quiz-speak">다시 듣기</button><br><small style="font-size:13px;color:#8a7f72">들리는 일본어는 무슨 뜻일까요? 충분히 듣고 골라 제출하세요</small></div>
+      `<div class="quiz-question">🔊 <button class="quiz-speak">다시 듣기</button><br><small style="font-size:13px;color:#8a7f72">들리는 소리를 일본어 글자에서 고르세요</small></div>
        <div class="quiz-choices"></div>`,
     );
     speakJa(item.target);
     body.querySelector('.quiz-speak')!.addEventListener('click', () => speakJa(item.target));
-    this.fillChoices(body, item, pool, true, feedbackEl, finish);
+    // 보기 발음은 끄기 — 들으면 귀로만 매칭해 찍을 수 있으므로 글자 인식을 강제한다
+    this.fillChoices(body, item, pool, { choiceField: 'target', playOnSelect: false }, finish);
   }
 
   private fillChoices(
     body: HTMLElement,
     item: ProblemItem,
     pool: ProblemItem[],
-    showMeaning: boolean,
-    _feedbackEl: HTMLElement,
+    opts: { choiceField: 'target' | 'meaning'; playOnSelect: boolean },
     finish: (correct: boolean) => void,
   ): void {
-    const label = (p: ProblemItem): string => (showMeaning ? p.meaning : p.target);
+    const label = (p: ProblemItem): string => (opts.choiceField === 'meaning' ? p.meaning : p.target);
     // 표시 텍스트가 겹치면 "같은 보기 2개 중 하나만 정답"이 되므로 중복 라벨 제외
     const seen = new Set([label(item)]);
     const distractors: ProblemItem[] = [];
@@ -179,8 +196,8 @@ export class QuizPanel {
         choicesEl.querySelectorAll('.quiz-choice').forEach((el) => el.classList.remove('selected'));
         btn.classList.add('selected');
         submitBtn.disabled = false;
-        // 일본어 보기는 누를 때마다 발음을 들려준다 — 듣고 비교하며 고르는 학습
-        if (!showMeaning) speakJa(choice.target);
+        // 작문 모드에서만 보기 발음 재생 — 듣고 비교하며 일본어를 익힌다
+        if (opts.playOnSelect) speakJa(choice.target);
       });
       choicesEl.appendChild(btn);
     }
