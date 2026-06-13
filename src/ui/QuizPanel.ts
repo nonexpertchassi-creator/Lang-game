@@ -116,7 +116,7 @@ export class QuizPanel {
   ): void {
     body.insertAdjacentHTML(
       'beforeend',
-      `<div class="quiz-question">「${item.meaning}」<br><small style="font-size:13px;color:#8a7f72">일본어로 고르세요</small></div>
+      `<div class="quiz-question">「${item.meaning}」<br><small style="font-size:13px;color:#8a7f72">보기를 누르면 발음이 들려요 — 다 들어보고 제출!</small></div>
        <div class="quiz-choices"></div>`,
     );
     this.fillChoices(body, item, pool, false, feedbackEl, finish);
@@ -132,7 +132,7 @@ export class QuizPanel {
   ): void {
     body.insertAdjacentHTML(
       'beforeend',
-      `<div class="quiz-question">🔊 <button class="quiz-speak">다시 듣기</button><br><small style="font-size:13px;color:#8a7f72">들리는 일본어는 무슨 뜻일까요?</small></div>
+      `<div class="quiz-question">🔊 <button class="quiz-speak">다시 듣기</button><br><small style="font-size:13px;color:#8a7f72">들리는 일본어는 무슨 뜻일까요? 충분히 듣고 골라 제출하세요</small></div>
        <div class="quiz-choices"></div>`,
     );
     speakJa(item.target);
@@ -161,26 +161,43 @@ export class QuizPanel {
     const choices = shuffle([item, ...distractors]);
     const choicesEl = body.querySelector('.quiz-choices')!;
     let answered = false;
+    let selected: ProblemItem | null = null;
+
+    // 고르기 ≠ 채점: 보기를 눌러 들어보고 비교한 뒤, 제출 버튼으로 확정한다 (찍기 방지)
+    const submitBtn = document.createElement('button');
+    submitBtn.className = 'quiz-next';
+    submitBtn.textContent = '정답 제출';
+    submitBtn.disabled = true;
 
     for (const choice of choices) {
       const btn = document.createElement('button');
       btn.className = 'quiz-choice';
-      btn.textContent = showMeaning ? choice.meaning : choice.target;
+      btn.textContent = label(choice);
       btn.addEventListener('click', () => {
         if (answered) return;
-        answered = true;
-        const correct = choice.target === item.target;
-        const correctLabel = showMeaning ? item.meaning : item.target;
-        btn.classList.add(correct ? 'correct' : 'wrong');
-        if (!correct) {
-          choicesEl.querySelectorAll('.quiz-choice').forEach((el) => {
-            if (el.textContent === correctLabel) el.classList.add('correct');
-          });
-        }
-        finish(correct);
+        selected = choice;
+        choicesEl.querySelectorAll('.quiz-choice').forEach((el) => el.classList.remove('selected'));
+        btn.classList.add('selected');
+        submitBtn.disabled = false;
+        // 일본어 보기는 누를 때마다 발음을 들려준다 — 듣고 비교하며 고르는 학습
+        if (!showMeaning) speakJa(choice.target);
       });
       choicesEl.appendChild(btn);
     }
+
+    submitBtn.addEventListener('click', () => {
+      if (answered || !selected) return;
+      answered = true;
+      submitBtn.remove();
+      const correct = selected.target === item.target;
+      const correctLabel = label(item);
+      choicesEl.querySelectorAll('.quiz-choice').forEach((el) => {
+        if (el.classList.contains('selected')) el.classList.add(correct ? 'correct' : 'wrong');
+        if (!correct && el.textContent === correctLabel) el.classList.add('correct');
+      });
+      finish(correct);
+    });
+    body.appendChild(submitBtn);
   }
 
   /** 조립 모드: 단어 블록을 순서대로 배열해 문장 완성 */
