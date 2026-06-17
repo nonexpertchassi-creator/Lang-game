@@ -1,8 +1,8 @@
-/** 여행(Trip) 상태: 도시 + 몇 박 + 며칠째 + 오늘 한 활동 — localStorage 저장 */
+/** 여행(Trip) 상태: 도시 + 몇 박 + 며칠째 + 하루 단계 + 한 일들 — localStorage 저장 */
 const KEY = 'linguatrip-trip-v1';
 
-/** 하루에 가능한 활동(상황극) 수 — 다 쓰면 밤이 된다 */
-const ACTS_PER_DAY = 2;
+/** 하루의 단계: 낮 활동 → 저녁 → 밤 → (자고) 아침 → … 마지막 날 귀국 */
+export type TripPhase = 'day' | 'evening' | 'night' | 'morning' | 'depart';
 
 export interface TripState {
   city: string;
@@ -10,8 +10,8 @@ export interface TripState {
   nights: number;
   /** 현재 일차 (1부터) */
   day: number;
-  /** 오늘 완료한 활동 수 */
-  actsToday: number;
+  /** 오늘의 단계 */
+  phase: TripPhase;
   /** 이번 여행에서 완료한 상황극 제목들 */
   log: string[];
 }
@@ -19,7 +19,16 @@ export interface TripState {
 function load(): TripState | null {
   try {
     const raw = localStorage.getItem(KEY);
-    if (raw) return JSON.parse(raw) as TripState;
+    if (raw) {
+      const s = JSON.parse(raw) as Partial<TripState>;
+      return {
+        city: s.city ?? 'tokyo',
+        nights: s.nights ?? 1,
+        day: s.day ?? 1,
+        phase: s.phase ?? 'day',
+        log: s.log ?? [],
+      };
+    }
   } catch {
     // 손상 시 여행 없음
   }
@@ -42,7 +51,8 @@ export const trip = {
     return state;
   },
   start(city: string, nights: number): void {
-    state = { city, nights, day: 1, actsToday: 0, log: [] };
+    // 1일차는 도착일 — 한낮(day)부터 시작
+    state = { city, nights, day: 1, phase: 'day', log: [] };
     save();
   },
   /** 전체 일수 (1박2일 → 2) */
@@ -52,20 +62,24 @@ export const trip = {
   get isLastDay(): boolean {
     return !!state && state.day >= state.nights + 1;
   },
-  /** 오늘 활동을 다 써서 밤이 되었는가 */
-  get isEvening(): boolean {
-    return !!state && state.actsToday >= ACTS_PER_DAY;
+  get phase(): TripPhase {
+    return state?.phase ?? 'day';
+  },
+  setPhase(p: TripPhase): void {
+    if (!state) return;
+    state.phase = p;
+    save();
   },
   recordActivity(title: string): void {
     if (!state) return;
-    state.actsToday++;
     state.log.push(title);
     save();
   },
+  /** 밤 → 다음 날 아침 */
   sleep(): void {
     if (!state) return;
     state.day++;
-    state.actsToday = 0;
+    state.phase = 'morning';
     save();
   },
   /** 여행 종료 — 최종 상태를 돌려주고 비운다 */
@@ -80,3 +94,4 @@ export const trip = {
     save();
   },
 };
+

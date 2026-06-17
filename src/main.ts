@@ -24,13 +24,11 @@ const savePanel = new SavePanel(rs);
 const scenarioPanel = new ScenarioPanel();
 const city = new CityGame(rs, scenarios, scenarioPanel);
 
-const playImmigration = (): void => {
-  scenarioPanel.play(scenarios['tokyo-immigration'], () => {
-    flags.set('tokyo-arrived');
-    city.goto('airport');
-  });
+// 입국 심사 다시 해보기 (여행과 무관한 단독 재생)
+const replayImmigration = (): void => {
+  scenarioPanel.play(scenarios['tokyo-immigration']);
 };
-const phonePanel = new PhonePanel(rs, city, playImmigration);
+const phonePanel = new PhonePanel(rs, city, replayImmigration);
 city.onOpenPhone = () => phonePanel.open();
 
 new Hud(
@@ -43,12 +41,14 @@ new Hud(
 
 city.start();
 
-// 첫 방문: 일정(박수) 선택 → 도쿄 입국 심사 → 여행 시작
+// 첫 방문: 일정(박수) 선택 → 입국 심사 → 여행(하루 흐름) 시작
 if (!flags.get('tokyo-arrived')) {
   setTimeout(() => {
     phonePanel.openTripSetup((nights) => {
-      city.startTrip('tokyo', nights);
-      playImmigration();
+      scenarioPanel.play(scenarios['tokyo-immigration'], () => {
+        flags.set('tokyo-arrived');
+        city.startTrip('tokyo', nights);
+      });
     });
   }, 400);
 }

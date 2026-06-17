@@ -76,6 +76,10 @@ html, body { height: 100%; background: #f3e9d6; overflow: hidden; }
   font-size: 14px; font-weight: 600; padding: 8px 12px; border-radius: 8px; margin-bottom: 12px;
   box-shadow: 3px 3px 0 rgba(0,0,0,.15);
 }
+.flow-prompt {
+  font-size: 14px; font-weight: 700; color: var(--accent);
+  margin-bottom: 10px;
+}
 .action-list { display: flex; flex-direction: column; gap: 9px; }
 .action-btn-row {
   text-align: left; font-size: 15px; font-weight: 600;
