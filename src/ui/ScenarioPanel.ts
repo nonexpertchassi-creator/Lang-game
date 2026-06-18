@@ -1,3 +1,4 @@
+import { charUrl, sceneUrl } from '../assets/assets';
 import type { ScenarioDef } from '../data/types';
 import { speakJa, ttsAvailable } from '../systems/speech';
 
@@ -24,6 +25,12 @@ export class ScenarioPanel {
   play(def: ScenarioDef, onSuccess?: () => void): void {
     let hearts = def.hearts;
 
+    // 그림이 있으면 배경 씬/캐릭터를 얹는다 (없으면 폴백 — 표시 안 함)
+    const scene = sceneUrl(def.scene);
+    const char = charUrl(def.char);
+    const sceneTag = scene ? `<div class="scenario-scene" style="background-image:url('${scene}')"></div>` : '';
+    const charTag = char ? `<img class="scenario-char" src="${char}" alt="" />` : '';
+
     const overlay = document.createElement('div');
     overlay.className = 'panel-overlay';
     overlay.innerHTML = `
@@ -47,8 +54,9 @@ export class ScenarioPanel {
       hearts = def.hearts;
       drawHearts();
       body.innerHTML = `
+        ${sceneTag}
         <p class="scenario-intro">${def.intro.replace(/\n/g, '<br>')}</p>
-        <button class="quiz-next">심사대로 간다 →</button>
+        <button class="quiz-next">시작하기 →</button>
       `;
       body.querySelector('.quiz-next')!.addEventListener('click', () => showStep(0));
     };
@@ -87,6 +95,8 @@ export class ScenarioPanel {
       speakJa(step.text);
 
       body.innerHTML = `
+        ${sceneTag}
+        ${charTag}
         <div class="quiz-progress">${i + 1} / ${def.steps.length}</div>
         <div class="quiz-question">
           <span class="scenario-speaker">${step.speaker}</span><br>

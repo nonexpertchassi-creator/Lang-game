@@ -241,6 +241,18 @@ body {
 
 /* 상황극 */
 .scenario-hearts { font-size: 16px; letter-spacing: 2px; }
+.scenario-scene {
+  height: 128px; border: 3px solid var(--ink); border-radius: 6px;
+  background-size: cover; background-position: center; background-repeat: no-repeat;
+  image-rendering: pixelated;
+  margin-bottom: 12px; box-shadow: 3px 3px 0 rgba(51, 40, 29, .25);
+}
+.scenario-char {
+  display: block; margin: -54px auto 4px; width: 104px; height: 104px;
+  image-rendering: pixelated; object-fit: contain;
+  filter: drop-shadow(2px 3px 0 rgba(51, 40, 29, .25));
+  position: relative; z-index: 1;
+}
 .scenario-intro { font-size: 15px; color: var(--ink); line-height: 1.75; padding: 8px 4px 16px; }
 .scenario-speaker { font-size: 12px; color: var(--accent); font-weight: 700; }
 .scenario-hint { font-size: 13px; color: #6f6457; font-style: italic; margin-bottom: 10px; }

@@ -59,4 +59,8 @@ export interface ScenarioDef {
   success: string;
   hearts: number;
   steps: ScenarioStep[];
+  /** 배경 씬 키 (src/assets/scenes/<scene>.png) — 없으면 표시 안 함 */
+  scene?: string;
+  /** 캐릭터 키 (src/assets/characters/<char>.png) — 없으면 표시 안 함 */
+  char?: string;
 }

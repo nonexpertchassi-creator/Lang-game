@@ -2,6 +2,8 @@
   "tokyo-immigration": {
     "id": "tokyo-immigration",
     "title": "🛂 도쿄 입국 심사",
+    "scene": "airport",
+    "char": "officer",
     "intro": "✈️ 나리타 공항에 도착했다.\n입국 심사대 앞 — 심사관이 나를 바라본다.\n일본어는 하나도 모르지만… 눈치로 살아남자!",
     "success": "🛬 무사히 입국했다! 도쿄 여행 시작!\n\n역시 도쿄(Lv0)는 외국인에게 익숙한 도시다.\n다른 도시는 이렇게 친절하지 않을지도…",
     "hearts": 3,
