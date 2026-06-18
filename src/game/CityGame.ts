@@ -4,6 +4,7 @@ import { inventory } from '../systems/inventory';
 import type { ResearchSystem } from '../systems/ResearchSystem';
 import { speakJa } from '../systems/speech';
 import { trip, type TripPhase } from '../systems/trip';
+import type { CheckpointPanel } from '../ui/CheckpointPanel';
 import type { ScenarioPanel } from '../ui/ScenarioPanel';
 
 interface LocationAction {
@@ -59,6 +60,7 @@ export class CityGame {
     private rs: ResearchSystem,
     private scenarios: Record<string, ScenarioDef>,
     private scenarioPanel: ScenarioPanel,
+    private checkpoint: CheckpointPanel,
   ) {
     this.screenEl = document.getElementById('screen-root')!;
     this.locations = this.buildLocations();
@@ -246,8 +248,12 @@ export class CityGame {
       actions.push({
         label: '🛏 호텔로 돌아가 잔다',
         run: () => {
-          trip.sleep();
-          this.render();
+          // 🌙 오늘의 관문: 통과해야 다음 날 (도시 레벨만큼 빡세짐)
+          const count = CITIES[t.city as CityId].lv + 1;
+          this.checkpoint.open(count, () => {
+            trip.sleep();
+            this.render();
+          });
         },
       });
     } else {

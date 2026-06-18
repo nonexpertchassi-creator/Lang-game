@@ -6,6 +6,7 @@ import scenariosJson from './data/ja/scenarios.json';
 import type { ProblemBank, ResearchDef, ScenarioDef } from './data/types';
 import { flags } from './systems/flags';
 import { ResearchSystem } from './systems/ResearchSystem';
+import { CheckpointPanel } from './ui/CheckpointPanel';
 import { Hud } from './ui/Hud';
 import { PhonePanel } from './ui/PhonePanel';
 import { QuizPanel } from './ui/QuizPanel';
@@ -22,7 +23,8 @@ const researchPanel = new ResearchPanel(rs);
 const quizPanel = new QuizPanel(rs, problemBank);
 const savePanel = new SavePanel(rs);
 const scenarioPanel = new ScenarioPanel();
-const city = new CityGame(rs, scenarios, scenarioPanel);
+const checkpointPanel = new CheckpointPanel(rs, problemBank);
+const city = new CityGame(rs, scenarios, scenarioPanel, checkpointPanel);
 
 // 입국 심사 다시 해보기 (여행과 무관한 단독 재생)
 const replayImmigration = (): void => {
